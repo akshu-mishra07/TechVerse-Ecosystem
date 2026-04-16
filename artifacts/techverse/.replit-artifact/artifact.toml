@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "TechVerse"
+version = "1.0.0"
+id = "artifacts/techverse"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21675
+
+[services.development]
+run = "pnpm --filter @workspace/techverse run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/techverse", "run", "build" ]
+publicDir = "artifacts/techverse/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21675"
+BASE_PATH = "/"

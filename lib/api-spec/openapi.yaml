@@ -3,20 +3,37 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TechVerse API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User profile operations
+  - name: projects
+    description: Portfolio project operations
+  - name: services
+    description: Service marketplace operations
+  - name: bookings
+    description: Service booking operations
+  - name: messages
+    description: Chat message operations
+  - name: notifications
+    description: Notification operations
+  - name: reviews
+    description: Review operations
+  - name: admin
+    description: Admin dashboard operations
+  - name: openai
+    description: OpenAI AI chat operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +41,697 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # Users
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+    put:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserProfileBody"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/{userId}:
+    get:
+      operationId: getUserById
+      tags: [users]
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public user profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/stats:
+    get:
+      operationId: getUserStats
+      tags: [users]
+      summary: Get current user stats summary
+      responses:
+        "200":
+          description: User statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+
+  # Projects
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List portfolio projects
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: featured
+          schema:
+            type: boolean
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{projectId}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    put:
+      operationId: updateProject
+      tags: [projects]
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectBody"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/featured:
+    get:
+      operationId: getFeaturedProjects
+      tags: [projects]
+      summary: Get featured/trending projects
+      responses:
+        "200":
+          description: Featured projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  # Services
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List marketplace services
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: userId
+          schema:
+            type: string
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+    post:
+      operationId: createService
+      tags: [services]
+      summary: Create a new service listing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServiceBody"
+      responses:
+        "201":
+          description: Created service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+
+  /services/{serviceId}:
+    get:
+      operationId: getService
+      tags: [services]
+      parameters:
+        - in: path
+          name: serviceId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Service detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    put:
+      operationId: updateService
+      tags: [services]
+      parameters:
+        - in: path
+          name: serviceId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateServiceBody"
+      responses:
+        "200":
+          description: Updated service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    delete:
+      operationId: deleteService
+      tags: [services]
+      parameters:
+        - in: path
+          name: serviceId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /services/categories:
+    get:
+      operationId: getServiceCategories
+      tags: [services]
+      summary: Get service categories with counts
+      responses:
+        "200":
+          description: Service categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ServiceCategory"
+
+  # Bookings
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List bookings (as client or provider)
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [client, provider]
+        - in: query
+          name: status
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingBody"
+      responses:
+        "201":
+          description: Created booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  /bookings/{bookingId}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+    put:
+      operationId: updateBookingStatus
+      tags: [bookings]
+      parameters:
+        - in: path
+          name: bookingId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingStatusBody"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  # Messages / Chat
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [messages]
+      summary: List user conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createConversation
+      tags: [messages]
+      summary: Start a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /conversations/{conversationId}/messages:
+    get:
+      operationId: listChatMessages
+      tags: [messages]
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Messages in conversation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+    post:
+      operationId: sendChatMessage
+      tags: [messages]
+      parameters:
+        - in: path
+          name: conversationId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendChatMessageBody"
+      responses:
+        "201":
+          description: Sent message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatMessage"
+
+  # Notifications
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List user notifications
+      parameters:
+        - in: query
+          name: unreadOnly
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /notifications/{notificationId}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  # Reviews
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      parameters:
+        - in: query
+          name: serviceId
+          schema:
+            type: integer
+        - in: query
+          name: userId
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewBody"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  # Admin
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get platform-wide admin statistics
+      responses:
+        "200":
+          description: Admin stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [admin]
+      summary: List all users for admin
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: offset
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProfile"
+
+  /admin/recent-activity:
+    get:
+      operationId: getAdminRecentActivity
+      tags: [admin]
+      summary: Get recent platform activity
+      responses:
+        "200":
+          description: Recent activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  # OpenAI AI chat
+  /openai/conversations:
+    get:
+      operationId: listOpenaiConversations
+      tags: [openai]
+      summary: List AI conversations
+      responses:
+        "200":
+          description: AI conversation list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiConversation"
+    post:
+      operationId: createOpenaiConversation
+      tags: [openai]
+      summary: Start a new AI conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOpenaiConversationBody"
+      responses:
+        "201":
+          description: Created AI conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConversation"
+
+  /openai/conversations/{id}/messages:
+    get:
+      operationId: getOpenaiMessages
+      tags: [openai]
+      summary: Get messages in an AI conversation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: AI messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiMessage"
+    post:
+      operationId: sendOpenaiMessage
+      tags: [openai]
+      summary: Send a message to the AI (SSE streaming)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenaiMessageBody"
+      responses:
+        "200":
+          description: Streaming response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +739,495 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        bio:
+          type: string
+          nullable: true
+        avatar:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        website:
+          type: string
+          nullable: true
+        github:
+          type: string
+          nullable: true
+        linkedin:
+          type: string
+          nullable: true
+        skills:
+          type: array
+          items:
+            type: string
+        isAdmin:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, clerkId, name, email, skills, isAdmin, createdAt]
+
+    UpdateUserProfileBody:
+      type: object
+      properties:
+        name:
+          type: string
+        bio:
+          type: string
+        avatar:
+          type: string
+        location:
+          type: string
+        website:
+          type: string
+        github:
+          type: string
+        linkedin:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+
+    UserStats:
+      type: object
+      properties:
+        totalProjects:
+          type: integer
+        totalServices:
+          type: integer
+        totalBookings:
+          type: integer
+        totalEarnings:
+          type: number
+        averageRating:
+          type: number
+        totalReviews:
+          type: integer
+      required: [totalProjects, totalServices, totalBookings, totalEarnings, averageRating, totalReviews]
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        userAvatar:
+          type: string
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+          nullable: true
+        techStack:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        demoUrl:
+          type: string
+          nullable: true
+        githubUrl:
+          type: string
+          nullable: true
+        featured:
+          type: boolean
+        views:
+          type: integer
+        likes:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, userId, userName, title, description, techStack, category, featured, views, likes, createdAt]
+
+    CreateProjectBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        techStack:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+        demoUrl:
+          type: string
+        githubUrl:
+          type: string
+        featured:
+          type: boolean
+      required: [title, description, techStack, category]
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+        userAvatar:
+          type: string
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        deliveryDays:
+          type: integer
+        imageUrl:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, userId, userName, title, description, category, price, priceUnit, deliveryDays, tags, rating, reviewCount, isActive, createdAt]
+
+    CreateServiceBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: number
+        priceUnit:
+          type: string
+        deliveryDays:
+          type: integer
+        imageUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required: [title, description, category, price, priceUnit, deliveryDays]
+
+    ServiceCategory:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+        icon:
+          type: string
+      required: [name, count, icon]
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        serviceId:
+          type: integer
+        serviceTitle:
+          type: string
+        clientId:
+          type: string
+        clientName:
+          type: string
+        clientAvatar:
+          type: string
+          nullable: true
+        providerId:
+          type: string
+        providerName:
+          type: string
+        providerAvatar:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, accepted, in_progress, completed, cancelled]
+        price:
+          type: number
+        requirements:
+          type: string
+          nullable: true
+        scheduledAt:
+          type: string
+          nullable: true
+        completedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, serviceId, serviceTitle, clientId, clientName, providerId, providerName, status, price, createdAt]
+
+    CreateBookingBody:
+      type: object
+      properties:
+        serviceId:
+          type: integer
+        requirements:
+          type: string
+        scheduledAt:
+          type: string
+      required: [serviceId]
+
+    UpdateBookingStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [accepted, in_progress, completed, cancelled]
+      required: [status]
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        participantId:
+          type: string
+        participantName:
+          type: string
+        participantAvatar:
+          type: string
+          nullable: true
+        lastMessage:
+          type: string
+          nullable: true
+        lastMessageAt:
+          type: string
+          nullable: true
+        unreadCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, participantId, participantName, unreadCount, createdAt]
+
+    CreateConversationBody:
+      type: object
+      properties:
+        participantId:
+          type: string
+      required: [participantId]
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        senderId:
+          type: string
+        senderName:
+          type: string
+        senderAvatar:
+          type: string
+          nullable: true
+        content:
+          type: string
+        createdAt:
+          type: string
+      required: [id, conversationId, senderId, senderName, content, createdAt]
+
+    SendChatMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        link:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, userId, type, title, message, isRead, createdAt]
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        serviceId:
+          type: integer
+        bookingId:
+          type: integer
+        reviewerId:
+          type: string
+        reviewerName:
+          type: string
+        reviewerAvatar:
+          type: string
+          nullable: true
+        rating:
+          type: integer
+        comment:
+          type: string
+        createdAt:
+          type: string
+      required: [id, serviceId, bookingId, reviewerId, reviewerName, rating, comment, createdAt]
+
+    CreateReviewBody:
+      type: object
+      properties:
+        serviceId:
+          type: integer
+        bookingId:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+      required: [serviceId, bookingId, rating, comment]
+
+    AdminStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        totalProjects:
+          type: integer
+        totalServices:
+          type: integer
+        totalBookings:
+          type: integer
+        totalRevenue:
+          type: number
+        activeUsers:
+          type: integer
+        newUsersThisMonth:
+          type: integer
+        bookingsByStatus:
+          type: object
+          additionalProperties:
+            type: integer
+      required: [totalUsers, totalProjects, totalServices, totalBookings, totalRevenue, activeUsers, newUsersThisMonth, bookingsByStatus]
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        description:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+        createdAt:
+          type: string
+      required: [id, type, description, userId, userName, createdAt]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+
+    AiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        title:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, title, createdAt, updatedAt]
+
+    CreateOpenaiConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required: [title]
+
+    AiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+      required: [id, conversationId, role, content, createdAt]
+
+    SendOpenaiMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+      required: [content]
